@@ -101,7 +101,7 @@ func Generator(connString string, tableName string, fileDir string) {
 	} else {
 		fileDir = filepath.Join("output", "protos", tableName)
 	}
-	fileName := tableName + ".go"
+	fileName := tableName + ".proto"
 	WriteFile(fileDir, fileName, fileString, 0755)
 }
 
