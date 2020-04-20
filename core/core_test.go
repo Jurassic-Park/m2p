@@ -30,7 +30,7 @@ func TestGetDB(t *testing.T) {
 }
 
 func TestGetMysqlStruct(t *testing.T) {
-	slic, err := GetMysqlStruct("crm_clue")
+	slic, err := GetMysqlStruct("xin:48sdf37EB7@tcp(rm-2ze0q80w59h4uyvx4rw.mysql.rds.aliyuncs.com:3306)/xin?charset=utf8", "crm_clue")
 	if err != nil {
 		t.Log(err.Error())
 	}
@@ -42,7 +42,7 @@ func TestDealServerName(t *testing.T) {
 }
 
 func TestGenerator(t *testing.T) {
-	Generator("gin_user_fields", "")
+	Generator("xin:48sdf37EB7@tcp(rm-2ze0q80w59h4uyvx4rw.mysql.rds.aliyuncs.com:3306)/xin?charset=utf8", "gin_user_fields", "")
 	t.Log("sucess")
 }
 
