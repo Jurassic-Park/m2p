@@ -37,10 +37,10 @@ func GetDB(connString string) *sql.DB {
 }
 
 //获取mysql结构的slic
-func GetMysqlStruct(tableName string) ([]SqlField, error) {
+func GetMysqlStruct(connString string, tableName string) ([]SqlField, error) {
 	var slic = make([]SqlField, 0)
 	var sqlField = new(SqlField)
-	db := GetDB("GinUser:userGin@tcp(127.0.0.1:3306)/gin?charset=utf8")
+	db := GetDB(connString)
 	defer db.Close()
 	rows, err := db.Query("desc " + tableName)
 	defer rows.Close()
@@ -78,10 +78,10 @@ func FirstToUpper(s string) string {
 }
 
 //生成proto文件
-func Generator(tableName string, fileDir string) {
+func Generator(connString string, tableName string, fileDir string) {
 	var fileString = templates.ProtoTpl
 	//获取mysql结构
-	fieldSlic, err := GetMysqlStruct(tableName)
+	fieldSlic, err := GetMysqlStruct(connString, tableName)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -128,7 +128,7 @@ func ConvertMysqlTypeToProtoType(fieldSlic []SqlField) string {
 		} else if strings.Index(fieldSlic[i].Type, "char") > -1 {
 			schema += "    string "
 		} else if strings.Index(fieldSlic[i].Type, "enum") > -1 {
-			schema += "string "
+			schema += "    string "
 		} else if strings.Index(fieldSlic[i].Type, "blob") > -1 {
 			schema += "    string "
 		} else if strings.Index(fieldSlic[i].Type, "float") > -1 {

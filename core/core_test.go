@@ -5,8 +5,8 @@ import (
 )
 
 func TestGetDB(t *testing.T) {
-	db := GetDB("GinUser:userGin@tcp(127.0.0.1:3306)/gin?charset=utf8")
-	rows, err := db.Query("desc gin_users")
+	db := GetDB("xin:48sdf37EB7@tcp(rm-2ze0q80w59h4uyvx4rw.mysql.rds.aliyuncs.com:3306)/xin?charset=utf8")
+	rows, err := db.Query("desc crm_clue")
 	if err != nil {
 		t.Log(err.Error())
 	}
@@ -30,7 +30,7 @@ func TestGetDB(t *testing.T) {
 }
 
 func TestGetMysqlStruct(t *testing.T) {
-	slic, err := GetMysqlStruct("gin_user_fields")
+	slic, err := GetMysqlStruct("crm_clue")
 	if err != nil {
 		t.Log(err.Error())
 	}

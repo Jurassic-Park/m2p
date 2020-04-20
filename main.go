@@ -28,7 +28,7 @@ func main() {
 		return
 	}
 	if *sqlTable != "" {
-		core.Generator(*sqlTable, *fileDir)
+		core.Generator(*connString, *sqlTable, *fileDir)
 	} else {
 		fmt.Println("table can not is empty")
 	}
