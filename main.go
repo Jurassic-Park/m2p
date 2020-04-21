@@ -24,12 +24,12 @@ func init() {
 
 func main() {
 	if *connString == "" {
-		fmt.Println("mysql can not is empty")
+		fmt.Println("mysql connect can not is empty")
 		return
 	}
-	if *sqlTable != "" {
-		core.Generator(*connString, *sqlTable, *fileDir)
-	} else {
+	if *sqlTable == "" {
 		fmt.Println("table can not is empty")
+		return
 	}
+	core.Generator(*connString, *sqlTable, *fileDir)
 }
