@@ -18,7 +18,7 @@ func init() {
 		return "m2p is tool that can automaticlly generate proto file."
 	}
 	goopt.Version = "0.1"
-	goopt.Summary = `m2p --mysql user:password@tcp\(host:port\)/database\?charset=utf8 --table tableName --out-file ./`
+	goopt.Summary = `m2p --mysql user:password@tcp\(host:port\)/database\?charset=utf8 --table tableName --out-file ./ --packageName aa`
 	goopt.Parse(nil)
 }
 
