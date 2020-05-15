@@ -1,4 +1,4 @@
-module m2p
+module github.com/Jurassic-Park/m2p
 
 go 1.14
 

@@ -3,9 +3,9 @@ package core
 import (
 	"database/sql"
 	"fmt"
+	"github.com/Jurassic-Park/m2p/templates"
 	"io/ioutil"
 	"log"
-	"m2p/templates"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -78,7 +78,20 @@ func FirstToUpper(s string) string {
 }
 
 //生成proto文件
-func Generator(connString string, tableName string, fileDir string) {
+func Generator(connString string, tableName string, fileDir string, packageName string) {
+	// 大驼峰表名
+	parts := strings.Split(tableName, "_")
+	UCamelTableName := ""
+	SCamelTableName := ""
+	for k, v := range parts {
+		if k != 0 {
+			SCamelTableName += FirstToUpper(v)
+		} else {
+			SCamelTableName += v
+		}
+		UCamelTableName += FirstToUpper(v)
+	}
+
 	var fileString = templates.ProtoTpl
 	//获取mysql结构
 	fieldSlic, err := GetMysqlStruct(connString, tableName)
@@ -86,23 +99,44 @@ func Generator(connString string, tableName string, fileDir string) {
 		fmt.Println(err.Error())
 	}
 	//整理参数
+	// format := map[string]string{
+	// 	"{{TableSchema}}": ConvertMysqlTypeToProtoType(fieldSlic),
+	// 	"{{TableName}}":   tableName,
+	// 	"{{ServerName}}":  DealServerName(tableName),
+	// }
 	format := map[string]string{
-		"{{TableSchema}}": ConvertMysqlTypeToProtoType(fieldSlic),
-		"{{TableName}}":   tableName,
-		"{{ServerName}}":  DealServerName(tableName),
+		"{{TableSchema}}":     ConvertMysqlTypeToProtoType(fieldSlic),
+		"{{UCamelTableName}}": UCamelTableName,
+		"{{SCamelTableName}}": SCamelTableName,
+		"{{PackageName}}":     packageName,
 	}
 	//替换关键字
 	for k, v := range format {
 		fileString = strings.ReplaceAll(fileString, k, v)
 	}
 	//生成文件
-	if fileDir != "" {
-		fileDir = filepath.Join(fileDir, "protos", tableName)
-	} else {
-		fileDir = filepath.Join("output", "protos", tableName)
-	}
+	// if fileDir != "" {
+	// 	fileDir = filepath.Join(fileDir, "protos", tableName)
+	// } else {
+	// 	fileDir = filepath.Join("output", "protos", tableName)
+	// }
+	// 当前有相同文件不更新
 	fileName := tableName + ".proto"
+	if ok, err := PathExists(fileDir + "/" + fileName); err == nil && ok {
+		fmt.Println("目录下存在相同文件:" + fileDir + "/" + fileName)
+		return
+	}
 	WriteFile(fileDir, fileName, fileString, 0755)
+}
+func PathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
 
 //convert mysql type to proto type

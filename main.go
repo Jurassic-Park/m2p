@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
-	"m2p/core"
-
+	"github.com/Jurassic-Park/m2p/core"
 	"github.com/droundy/goopt"
 )
 
 var (
-	sqlTable   = goopt.String([]string{"-t", "--table"}, "", "Table to build struct from")
-	connString = goopt.String([]string{"-m", "--mysql"}, "", "mysql config")
-	fileDir    = goopt.String([]string{"-o", "--out-file"}, "", "file dir,if not use 'output' ")
+	sqlTable    = goopt.String([]string{"-t", "--table"}, "", "Table to build struct from")
+	connString  = goopt.String([]string{"-m", "--mysql"}, "", "mysql config")
+	fileDir     = goopt.String([]string{"-o", "--out-file"}, "", "file dir,if not use 'output' ")
+	packageName = goopt.String([]string{"-p", "--package-name"}, "", "package ,if not use 'output' ")
 )
 
 func init() {
@@ -31,5 +31,9 @@ func main() {
 		fmt.Println("table can not is empty")
 		return
 	}
-	core.Generator(*connString, *sqlTable, *fileDir)
+	if *packageName == "" {
+		fmt.Println("package name can not is empty")
+		return
+	}
+	core.Generator(*connString, *sqlTable, *fileDir, *packageName)
 }
