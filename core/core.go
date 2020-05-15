@@ -14,13 +14,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type SqlField struct {
-	Field   string
-	Type    string
-	Null    string
-	Key     string
-	Default sql.NullString
-	Extra   string
+type SqlFieldDesc struct {
+	COLUMN_NAME    string
+	COLUMN_COMMENT string
+	COLUMN_TYPE    string
 }
 
 func GetDB(connString string) *sql.DB {
@@ -36,13 +33,33 @@ func GetDB(connString string) *sql.DB {
 	return db
 }
 
+func GetBetweenStr(str, start, end string) string {
+	n := strings.Index(str, start)
+	n += len(start)
+	if n == -1 {
+		n = 0
+	}
+	str = string([]byte(str)[n:])
+	m := strings.Index(str, end)
+	if m == -1 {
+		m = len(str)
+	}
+	str = string([]byte(str)[:m])
+	return str
+}
+
 //获取mysql结构的slic
-func GetMysqlStruct(connString string, tableName string) ([]SqlField, error) {
-	var slic = make([]SqlField, 0)
-	var sqlField = new(SqlField)
+func GetMysqlStruct(connString string, tableName string) ([]SqlFieldDesc, error) {
+	var slic = make([]SqlFieldDesc, 0)
+	var sqlFieldDesc = new(SqlFieldDesc)
 	db := GetDB(connString)
 	defer db.Close()
-	rows, err := db.Query("desc " + tableName)
+
+	tableSchema := GetBetweenStr(connString, ")/", "?")
+	fmt.Println("table schema is " + tableSchema)
+
+	querySql := "select COLUMN_NAME, COLUMN_COMMENT, COLUMN_TYPE from information_schema.columns where table_schema ='" + tableSchema + "' and table_name = '" + tableName + "' ;"
+	rows, err := db.Query(querySql)
 	defer rows.Close()
 	if err != nil {
 		return slic, err
@@ -52,11 +69,11 @@ func GetMysqlStruct(connString string, tableName string) ([]SqlField, error) {
 	}
 	for rows.Next() {
 		//定义变量接收查询数据
-		err := rows.Scan(&sqlField.Field, &sqlField.Type, &sqlField.Null, &sqlField.Key, &sqlField.Default, &sqlField.Extra)
+		err := rows.Scan(&sqlFieldDesc.COLUMN_NAME, &sqlFieldDesc.COLUMN_COMMENT, &sqlFieldDesc.COLUMN_TYPE)
 		if err != nil {
 			return slic, err
 		}
-		slic = append(slic, *sqlField)
+		slic = append(slic, *sqlFieldDesc)
 	}
 	return slic, err
 }
@@ -77,20 +94,31 @@ func FirstToUpper(s string) string {
 	return strings.ToUpper(s[0:1]) + strings.ToLower(s[1:])
 }
 
+// 生成驼峰
+// tag 大驼峰 1， 小驼峰 0
+func generatorCamelName(str string, tag int) (name string) {
+	parts := strings.Split(str, "_")
+	if tag == 1 {
+		for _, v := range parts {
+			name += FirstToUpper(v)
+		}
+	} else {
+		for k, v := range parts {
+			if k != 0 {
+				name += FirstToUpper(v)
+			} else {
+				name += v
+			}
+		}
+	}
+	return
+}
+
 //生成proto文件
 func Generator(connString string, tableName string, fileDir string, packageName string) {
 	// 大驼峰表名
-	parts := strings.Split(tableName, "_")
-	UCamelTableName := ""
-	SCamelTableName := ""
-	for k, v := range parts {
-		if k != 0 {
-			SCamelTableName += FirstToUpper(v)
-		} else {
-			SCamelTableName += v
-		}
-		UCamelTableName += FirstToUpper(v)
-	}
+	UCamelTableName := generatorCamelName(tableName, 1)
+	SCamelTableName := generatorCamelName(tableName, 0)
 
 	var fileString = templates.ProtoTpl
 	//获取mysql结构
@@ -99,11 +127,6 @@ func Generator(connString string, tableName string, fileDir string, packageName 
 		fmt.Println(err.Error())
 	}
 	//整理参数
-	// format := map[string]string{
-	// 	"{{TableSchema}}": ConvertMysqlTypeToProtoType(fieldSlic),
-	// 	"{{TableName}}":   tableName,
-	// 	"{{ServerName}}":  DealServerName(tableName),
-	// }
 	format := map[string]string{
 		"{{TableSchema}}":     ConvertMysqlTypeToProtoType(fieldSlic),
 		"{{UCamelTableName}}": UCamelTableName,
@@ -114,12 +137,6 @@ func Generator(connString string, tableName string, fileDir string, packageName 
 	for k, v := range format {
 		fileString = strings.ReplaceAll(fileString, k, v)
 	}
-	//生成文件
-	// if fileDir != "" {
-	// 	fileDir = filepath.Join(fileDir, "protos", tableName)
-	// } else {
-	// 	fileDir = filepath.Join("output", "protos", tableName)
-	// }
 	// 当前有相同文件不更新
 	fileName := tableName + ".proto"
 	if ok, err := PathExists(fileDir + "/" + fileName); err == nil && ok {
@@ -140,43 +157,43 @@ func PathExists(path string) (bool, error) {
 }
 
 //convert mysql type to proto type
-func ConvertMysqlTypeToProtoType(fieldSlic []SqlField) string {
+func ConvertMysqlTypeToProtoType(fieldSlic []SqlFieldDesc) string {
 	var schema string
 	//处理变量
 	for i := 0; i < len(fieldSlic); i++ {
 		numStr := strconv.Itoa(i + 1)
-		if strings.Index(fieldSlic[i].Type, "bigint") > -1 {
-			if strings.Index(fieldSlic[i].Type, "unsigned") > -1 {
+		if strings.Index(fieldSlic[i].COLUMN_TYPE, "bigint") > -1 {
+			if strings.Index(fieldSlic[i].COLUMN_TYPE, "unsigned") > -1 {
 				schema += "    uint64 "
 			} else {
 				schema += "    int64 "
 			}
-		} else if strings.Index(fieldSlic[i].Type, "int") > -1 {
-			if strings.Index(fieldSlic[i].Type, "unsigned") > -1 {
+		} else if strings.Index(fieldSlic[i].COLUMN_TYPE, "int") > -1 {
+			if strings.Index(fieldSlic[i].COLUMN_TYPE, "unsigned") > -1 {
 				schema += "    uint32 "
 			} else {
 				schema += "    int32 "
 			}
-		} else if strings.Index(fieldSlic[i].Type, "text") > -1 {
+		} else if strings.Index(fieldSlic[i].COLUMN_TYPE, "text") > -1 {
 			schema += "    string "
-		} else if strings.Index(fieldSlic[i].Type, "char") > -1 {
+		} else if strings.Index(fieldSlic[i].COLUMN_TYPE, "char") > -1 {
 			schema += "    string "
-		} else if strings.Index(fieldSlic[i].Type, "enum") > -1 {
+		} else if strings.Index(fieldSlic[i].COLUMN_TYPE, "enum") > -1 {
 			schema += "    string "
-		} else if strings.Index(fieldSlic[i].Type, "blob") > -1 {
+		} else if strings.Index(fieldSlic[i].COLUMN_TYPE, "blob") > -1 {
 			schema += "    string "
-		} else if strings.Index(fieldSlic[i].Type, "float") > -1 {
+		} else if strings.Index(fieldSlic[i].COLUMN_TYPE, "float") > -1 {
 			schema += "    float "
-		} else if strings.Index(fieldSlic[i].Type, "double") > -1 {
+		} else if strings.Index(fieldSlic[i].COLUMN_TYPE, "double") > -1 {
 			schema += "    double "
-		} else if strings.Index(fieldSlic[i].Type, "date") > -1 {
+		} else if strings.Index(fieldSlic[i].COLUMN_TYPE, "date") > -1 {
 			schema += "    string "
-		} else if strings.Index(fieldSlic[i].Type, "time") > -1 {
+		} else if strings.Index(fieldSlic[i].COLUMN_TYPE, "time") > -1 {
 			schema += "    string "
 		} else {
 			schema += "    string "
 		}
-		schema += fieldSlic[i].Field + " = " + numStr + ";"
+		schema += generatorCamelName(fieldSlic[i].COLUMN_NAME, 0) + " = " + numStr + "; // " + fieldSlic[i].COLUMN_COMMENT
 		if i < len(fieldSlic)-1 {
 			schema += "\n"
 		}
