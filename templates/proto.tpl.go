@@ -7,11 +7,11 @@ package {{PackageName}};
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
-import "google/common.proto";
+import "common/common.proto";
 
 service {{UCamelTableName}} {
   // 添加
-  rpc Add({{UCamelTableName}}Entity) returns (google.Id) {
+  rpc Add({{UCamelTableName}}Entity) returns (common.Id) {
     option (google.api.http) = {
       post: "/{{SCamelTableName}}/add"
       body: "*"
@@ -25,7 +25,7 @@ service {{UCamelTableName}} {
     };
   }
   // 删除
-  rpc Delete(google.Id) returns (google.protobuf.Empty) {
+  rpc Delete(common.Id) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post: "/{{SCamelTableName}}/delete"
       body: "*"
@@ -33,13 +33,13 @@ service {{UCamelTableName}} {
   }
   // 查询
   // page=1&pageSize=2&name=ddd&ok=8&order=no
-  rpc Search(google.SearchRequest) returns ({{UCamelTableName}}SearchResponse) {
+  rpc Search(common.SearchRequest) returns ({{UCamelTableName}}SearchResponse) {
     option (google.api.http) = {
       get: "/{{SCamelTableName}}/search/{param}"
     };
   }
   // 单个
-  rpc View(google.Id) returns ({{UCamelTableName}}Entity) {
+  rpc View(common.Id) returns ({{UCamelTableName}}Entity) {
     option (google.api.http) = {
       get: "/{{SCamelTableName}}/view/{id}"
     };
@@ -53,7 +53,7 @@ message {{UCamelTableName}}Entity {
 
 // 列表返回
 message {{UCamelTableName}}SearchResponse {
-  google.SearchPageResponse pageInfo = 1; // 分页信息
+  common.SearchPageResponse pageInfo = 1; // 分页信息
   repeated {{UCamelTableName}}Entity data = 2; // 数据
 }
 `
