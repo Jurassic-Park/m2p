@@ -161,6 +161,8 @@ func ConvertMysqlTypeToProtoType(fieldSlic []SqlFieldDesc) string {
 	var schema string
 	//处理变量
 	for i := 0; i < len(fieldSlic); i++ {
+		schema += "    // " + fieldSlic[i].COLUMN_COMMENT + "\n"
+
 		numStr := strconv.Itoa(i + 1)
 		if strings.Index(fieldSlic[i].COLUMN_TYPE, "bigint") > -1 {
 			if strings.Index(fieldSlic[i].COLUMN_TYPE, "unsigned") > -1 {
@@ -193,7 +195,7 @@ func ConvertMysqlTypeToProtoType(fieldSlic []SqlFieldDesc) string {
 		} else {
 			schema += "    string "
 		}
-		schema += generatorCamelName(fieldSlic[i].COLUMN_NAME, 0) + " = " + numStr + "; // " + fieldSlic[i].COLUMN_COMMENT
+		schema += generatorCamelName(fieldSlic[i].COLUMN_NAME, 0) + " = " + numStr + ";"
 		if i < len(fieldSlic)-1 {
 			schema += "\n"
 		}
