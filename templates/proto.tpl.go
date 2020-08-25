@@ -13,21 +13,21 @@ service {{UCamelTableName}} {
   // 添加
   rpc Add({{UCamelTableName}}Entity) returns (common.Id) {
     option (google.api.http) = {
-      post: "/{{SCamelTableName}}/add"
+      post: "/{{SPackageName}}/{{SCamelTableName}}/add"
       body: "*"
     };
   }
   //更新
   rpc Update({{UCamelTableName}}Entity) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/{{SCamelTableName}}/update"
+      post: "/{{SPackageName}}/{{SCamelTableName}}/update"
       body: "*"
     };
   }
   // 删除
   rpc Delete(common.Id) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/{{SCamelTableName}}/delete"
+      post: "/{{SPackageName}}/{{SCamelTableName}}/delete"
       body: "*"
     };
   }
@@ -35,13 +35,13 @@ service {{UCamelTableName}} {
   // page=1&pageSize=2&name=ddd&ok=8&order=no
   rpc Search(common.SearchRequest) returns ({{UCamelTableName}}SearchResponse) {
     option (google.api.http) = {
-      get: "/{{SCamelTableName}}/search/{param}"
+      get: "/{{SPackageName}}/{{SCamelTableName}}/search/{param}"
     };
   }
   // 单个
   rpc View(common.Id) returns ({{UCamelTableName}}Entity) {
     option (google.api.http) = {
-      get: "/{{SCamelTableName}}/view/{id}"
+      get: "/{{SPackageName}}/{{SCamelTableName}}/view/{id}"
     };
   }
 }

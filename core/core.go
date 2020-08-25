@@ -119,6 +119,7 @@ func Generator(connString string, tableName string, fileDir string, packageName 
 	// 大驼峰表名
 	UCamelTableName := generatorCamelName(tableName, 1)
 	SCamelTableName := generatorCamelName(tableName, 0)
+	SPackageName := generatorCamelName(packageName, 0)
 
 	var fileString = templates.ProtoTpl
 	//获取mysql结构
@@ -132,6 +133,7 @@ func Generator(connString string, tableName string, fileDir string, packageName 
 		"{{UCamelTableName}}": UCamelTableName,
 		"{{SCamelTableName}}": SCamelTableName,
 		"{{PackageName}}":     packageName,
+		"{{SPackageName}}":    SPackageName,
 	}
 	//替换关键字
 	for k, v := range format {
