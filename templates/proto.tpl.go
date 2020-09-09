@@ -10,17 +10,10 @@ import "google/protobuf/empty.proto";
 import "common/common.proto";
 
 service {{UCamelTableName}} {
-  // 添加
+  // 添加/更新
   rpc Add({{UCamelTableName}}Entity) returns (common.Id) {
     option (google.api.http) = {
-      post: "/{{SPackageName}}/{{SCamelTableName}}/add"
-      body: "*"
-    };
-  }
-  //更新
-  rpc Update({{UCamelTableName}}Entity) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      post: "/{{SPackageName}}/{{SCamelTableName}}/update"
+      post: "/{{SPackageName}}/{{SCamelTableName}}/save"
       body: "*"
     };
   }
