@@ -5,13 +5,15 @@ syntax = "proto3";
 
 package {{PackageName}};
 
+option go_package = "zhiyong/insure/pack/{{PackageName}};{{PackageName}}";
+
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "common/common.proto";
 
 service {{UCamelTableName}} {
   // 添加/更新
-  rpc Add({{UCamelTableName}}Entity) returns (common.Id) {
+  rpc Save({{UCamelTableName}}Entity) returns (common.Id) {
     option (google.api.http) = {
       post: "/{{SPackageName}}/{{SCamelTableName}}/save"
       body: "*"
